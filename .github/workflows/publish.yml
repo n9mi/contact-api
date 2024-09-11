@@ -57,7 +57,7 @@ jobs:
         run: echo "JWT_EXPIRED_IN_MINUTES=${{ secrets.JWT_EXPIRED_IN_MINUTES }}" >> .env
 
       - name: Run database migration files
-        run: npm run db-migrate
+        run: npm run migrate
 
       - name: Run test
         run: npm test
