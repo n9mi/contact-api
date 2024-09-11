@@ -5,10 +5,11 @@
   "main": "index.js",
   "scripts": {
     "dev": "concurrently \"npx tsc --watch\" \"nodemon -q src/main.ts\"",
-    "start": "node dist/src/main.js",
+    "start": "node dist/main.js",
     "build": "tsc",
     "test": "jest --runInBand",
-    "db-migrate": "npx prisma migrate deploy"
+    "migrate": "prisma migrate deploy",
+    "start:migrate:prod": "prisma migrate deploy && node dist/main.js"
   },
   "jest": {
     "transform": {
