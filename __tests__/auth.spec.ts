@@ -67,11 +67,11 @@ describe("POST /auth/login", () => {
                 password: AuthTestUtils.user.password,
             });
 
-            logger.debug(res.body);
-            expect(res.status).toBe(200);
-            expect(res.body.data.token).toBeDefined();
+        logger.debug(res.body);
+        expect(res.status).toBe(200);
+        expect(res.body.data.token).toBeDefined();
 
-            await AuthTestUtils.delete();
+        await AuthTestUtils.delete();
     });
 
     it("should return 400 - bad request", async () => {
@@ -82,9 +82,9 @@ describe("POST /auth/login", () => {
                 password: "",
             });
 
-            logger.debug(res.body);
-            expect(res.status).toBe(400);
-            expect(res.body.errors).toBeDefined();
+        logger.debug(res.body);
+        expect(res.status).toBe(400);
+        expect(res.body.errors).toBeDefined();
     });
 
     it("should return 401 - login failed with wrong credentials", async () => {
@@ -95,9 +95,9 @@ describe("POST /auth/login", () => {
                 password: "randompassword",
             });
 
-            logger.debug(res.body);
-            expect(res.status).toBe(401);
-            expect(res.body.errors).toBeDefined();
+        logger.debug(res.body);
+        expect(res.status).toBe(401);
+        expect(res.body.errors).toBeDefined();
     });
 });
 
