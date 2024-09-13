@@ -6,6 +6,7 @@ export const getUserRouter = (basePath: string) => {
     const userRouter = express.Router();
     userRouter.use(accessValidation);
     userRouter.get(`${basePath}/user/info`, UserController.info);
+    userRouter.put(`${basePath}/user/update`, UserController.update);
 
     return userRouter;
 }
