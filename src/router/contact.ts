@@ -5,6 +5,7 @@ import { accessValidation } from "../middleware/accessValidation";
 export const getContactRouter = (basePath: string) => {
     const contactRouter = express.Router();
     contactRouter.use(accessValidation);
+    contactRouter.get(`${basePath}/contact/:id`, ContactController.getById);
     contactRouter.post(`${basePath}/contact`, ContactController.create);
 
     return contactRouter;
