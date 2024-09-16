@@ -368,6 +368,50 @@ describe("PUT /contacts/:id", () => {
     }); 
 });
 
+describe("DELETE /contacts/:id", () => {
+    let token: string = "";
+    let createdContact: Contact = {} as Contact;
+
+    beforeAll(async () => {
+        token = await ContactTestUtil.getToken();
+        createdContact = await ContactTestUtil.createContact();
+    });
+
+    afterAll(async () => {
+        await ContactTestUtil.deleteContact();
+        await ContactTestUtil.deleteUser();
+    });
+
+    it("should return 200 - success deleting a contact", async () => {
+        const res = await supertest(web)
+            .delete(`${basePath}/contacts/${createdContact.id}`)
+            .set('Authorization', `Bearer ${token}`);
+        
+            logger.info(res.body);
+            expect(res.status).toBe(200);
+            expect(res.body.status).toBe(true);
+    });
+
+    it("should return 404 - contact doesn't exists", async () => {
+        const res = await supertest(web)
+            .delete(`${basePath}/contacts/1000`)
+            .set('Authorization', `Bearer ${token}`);
+        
+            logger.info(res.body);
+            expect(res.status).toBe(404);
+            expect(res.body.errors).toBeDefined();
+    });
+
+    it("should return 401 - empty authorization", async () => {
+        const res = await supertest(web)
+            .delete(`${basePath}/contacts/${createdContact.id}`);
+        
+            logger.info(res.body);
+            expect(res.status).toBe(401);
+            expect(res.body.errors).toBeDefined();
+    });
+})
+
 class ContactTestUtil {
     static user = {
         name: "user_test_contact",

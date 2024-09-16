@@ -137,4 +137,25 @@ export default class ContactService {
 
         return toContactResponse(contactUpdated);
     }
+
+    static async delete(username: string, id: number): Promise<boolean> {
+        const isExists = await prisma.contact.count({
+            where: {
+                id: id,
+                username: username
+            }
+        }) == 1;
+        if (!isExists) {
+            throw new ResponseError(404, "contact doesn't exists");
+        }
+
+        await prisma.contact.delete({
+            where: {
+                id: id,
+                username: username
+            } 
+        });
+
+        return true;
+    }
 }

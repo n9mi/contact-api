@@ -9,6 +9,8 @@ export const getContactRouter = (basePath: string) => {
     contactRouter.get(`${basePath}/contacts/:id`, ContactController.getById);
     contactRouter.post(`${basePath}/contacts`, ContactController.create);
     contactRouter.put(`${basePath}/contacts/:id`, ContactController.update);
+    contactRouter.delete(`${basePath}/contacts/:id`, ContactController.delete);
+
 
     return contactRouter;
 }

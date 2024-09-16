@@ -69,4 +69,20 @@ export class ContactController {
             next(e);
         }
     }
+
+    static async delete(req: Request, res: Response, next: NextFunction) {
+        try {
+            if (isNaN(Number(req.params.id))) {
+                throw new ResponseError(404, "contact doesn't exists");
+            }
+            const deleteRes = await ContactService.delete(res.locals.username, Number(req.params.id));
+
+            res.status(200)
+                .json({
+                    status: deleteRes
+                });
+        } catch (e) {
+            next(e);
+        }
+    }
 }
