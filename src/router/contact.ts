@@ -8,6 +8,7 @@ export const getContactRouter = (basePath: string) => {
     contactRouter.get(`${basePath}/contacts`, ContactController.getAll);
     contactRouter.get(`${basePath}/contacts/:id`, ContactController.getById);
     contactRouter.post(`${basePath}/contacts`, ContactController.create);
+    contactRouter.put(`${basePath}/contacts/:id`, ContactController.update);
 
     return contactRouter;
 }

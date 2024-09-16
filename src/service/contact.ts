@@ -102,7 +102,7 @@ export default class ContactService {
     }
 
     static async create(username: string, req: ContactRequest): Promise<ContactResponse> {
-        const validatedReq = Validation.validate(ContactValidation.CREATE, req);
+        const validatedReq = Validation.validate(ContactValidation.SAVE, req);
 
         const contact = await prisma.contact.create({
             data: {
@@ -112,5 +112,29 @@ export default class ContactService {
         });
 
         return toContactResponse(contact);
+    }
+
+    static async update(username: string, id: number, req: ContactRequest): Promise<ContactResponse> {
+        const validatedReq = Validation.validate(ContactValidation.SAVE, req);
+
+        const isExist = await prisma.contact.count({
+            where: {
+                id: id,
+                username: username
+            }
+        }) === 1;
+        if (!isExist) {
+            throw new ResponseError(404, "contact doesn't exists");
+        }
+
+        const contactUpdated = await prisma.contact.update({
+            where: {
+                id: id,
+                username: username
+            },
+            data: validatedReq
+        });
+
+        return toContactResponse(contactUpdated);
     }
 }

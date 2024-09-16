@@ -4,6 +4,7 @@ import supertest from "supertest";
 import { basePath, web } from "../src/application/web";
 import logger from "../src/application/logger";
 import { Contact } from "@prisma/client";
+import { create } from "domain";
 
 describe("GET /contacts", () => {
     let token: string = "";
@@ -116,6 +117,15 @@ describe("GET /contacts", () => {
         expect(res.body.paging.current_page).toBe(1);
         expect(res.body.paging.total_page).toBe(0);
         expect(res.body.paging.page_size).toBe(10);
+    });
+
+    it("should return 401 - empty authorization", async () => {
+        const res = await supertest(web)
+            .get(`${basePath}/contacts`)
+
+        logger.info(res.body);
+        expect(res.status).toBe(401);
+        expect(res.body.errors).toBeDefined();
     });
 });
 
@@ -263,6 +273,100 @@ describe("POST /contacts", () => {
         expect(res.body.errors).toBeDefined();
     });
 })
+
+describe("PUT /contacts/:id", () => {
+    let token: string = "";
+    let createdContact: Contact = {} as Contact;
+
+    beforeAll(async () => {
+        token = await ContactTestUtil.getToken();
+        createdContact = await ContactTestUtil.createContact();
+    });
+
+    afterAll(async () => {
+        await ContactTestUtil.deleteContact();
+        await ContactTestUtil.deleteUser();
+    });
+
+    const updatedContact = {
+        first_name: "First Updated",
+        last_name: "Last Updated",
+        email: "first.updated@last.com",
+        phone: "081234567890"
+    };
+
+    it("should return 200 - success updating contact with emty last_name, email, and phone", async () => {
+        const res = await supertest(web)
+            .put(`${basePath}/contacts/${createdContact.id}`)
+            .send({
+                first_name: "First Updated",
+            })
+            .set('Authorization', `Bearer ${token}`);
+
+        logger.info(res.body);
+        expect(res.status).toBe(200);
+        expect(res.body.data.id).toBe(createdContact.id);
+        expect(res.body.data.first_name).toBe(updatedContact.first_name);
+        expect(res.body.data.last_name).toBe(createdContact.last_name);
+        expect(res.body.data.email).toBe(createdContact.email);
+        expect(res.body.data.phone).toBe(createdContact.phone);
+    }); 
+
+    it("should return 200 - success updating contact", async () => {
+        const res = await supertest(web)
+            .put(`${basePath}/contacts/${createdContact.id}`)
+            .send(updatedContact)
+            .set('Authorization', `Bearer ${token}`);
+
+        logger.info(res.body);
+        expect(res.status).toBe(200);
+        expect(res.body.data.id).toBe(createdContact.id);
+        expect(res.body.data.first_name).toBe(updatedContact.first_name);
+        expect(res.body.data.last_name).toBe(updatedContact.last_name);
+        expect(res.body.data.email).toBe(updatedContact.email);
+        expect(res.body.data.phone).toBe(updatedContact.phone);
+    }); 
+
+    it("should return 400 - bad request invalid email", async () => {
+        const res = await supertest(web)
+            .put(`${basePath}/contacts/${createdContact.id}`)
+            .send({
+                first_name: updatedContact.first_name,
+                last_name: updatedContact.last_name,
+                email: "test",
+            })
+            .set('Authorization', `Bearer ${token}`);
+
+        logger.info(res.body);
+        expect(res.status).toBe(400);
+        expect(res.body.errors.email).toBeDefined();
+    });
+
+    it("should return 400 - bad request phone number more than 20 characters", async () => {
+        const res = await supertest(web)
+            .put(`${basePath}/contacts/${createdContact.id}`)
+            .send({
+                first_name: updatedContact.first_name,
+                last_name: updatedContact.last_name,
+                phone: "0123456789012345678901",
+            })
+            .set('Authorization', `Bearer ${token}`);
+
+        logger.info(res.body);
+        expect(res.status).toBe(400);
+        expect(res.body.errors.phone).toBeDefined();
+    });
+
+    it("should return 401 - empty authorization", async () => {
+        const res = await supertest(web)
+            .put(`${basePath}/contacts/${createdContact.id}`)
+            .send(updatedContact);
+
+        logger.info(res.body);
+        expect(res.status).toBe(401);
+        expect(res.body.errors).toBeDefined();
+    }); 
+});
 
 class ContactTestUtil {
     static user = {

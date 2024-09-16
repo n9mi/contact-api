@@ -51,4 +51,22 @@ export class ContactController {
             next(e);
         }
     }
+
+    static async update(req: Request, res: Response, next: NextFunction) {
+        try {
+            if (isNaN(Number(req.params.id))) {
+                throw new ResponseError(404, "contact doesn't exists");
+            }
+            const updateRes = await ContactService.update(res.locals.user.username, 
+                                                            Number(req.params.id),
+                                                            req.body as ContactRequest)
+
+            res.status(200)
+                .json({
+                    data: updateRes
+                });
+        } catch (e) {
+            next(e);
+        }
+    }
 }
