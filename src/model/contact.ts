@@ -1,5 +1,13 @@
 import { Contact } from "@prisma/client"
 
+export interface ContactSearchRequest {
+    name?: string,
+    email?: string,
+    phone?: string,
+    page: number,
+    page_size: number
+}
+
 export interface ContactRequest {
     first_name: string,
     last_name: string,

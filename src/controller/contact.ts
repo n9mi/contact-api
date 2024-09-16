@@ -1,9 +1,27 @@
 import { Request, Response, NextFunction } from "express";
 import ContactService from "../service/contact";
-import { ContactRequest } from "../model/contact";
+import { ContactRequest, ContactSearchRequest } from "../model/contact";
 import { ResponseError } from "../error/response";
 
 export class ContactController {
+
+    static async getAll(req: Request, res: Response, next: NextFunction) {
+        try {
+            const getReq: ContactSearchRequest = {
+                name: req.query.name as string,
+                email: req.query.email as string,
+                phone: req.query.phone as string,
+                page: req.query.page ? Number(req.query.page) : 1,
+                page_size: req.query.page_size ? Number(req.query.page_size) : 10
+            };
+            const getRes = await ContactService.findAll(res.locals.user.username, getReq);
+            
+            res.status(200)
+                .json(getRes);
+        } catch (e) {
+            next(e);
+        }
+    }
 
     static async getById(req: Request, res: Response, next: NextFunction) {
         try {

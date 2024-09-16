@@ -5,7 +5,121 @@ import { basePath, web } from "../src/application/web";
 import logger from "../src/application/logger";
 import { Contact } from "@prisma/client";
 
-describe("GET /contact:id", () => { 
+describe("GET /contacts", () => {
+    let token: string = "";
+    let createdContact: Contact = {} as Contact;
+
+    beforeAll(async () => {
+        token = await ContactTestUtil.getToken();
+        createdContact = await ContactTestUtil.createContact();
+    });
+
+    afterAll(async () => {
+        await ContactTestUtil.deleteContact();
+        await ContactTestUtil.deleteUser();
+    });
+
+    it("should be able to get all contact", async () => {
+        const res = await supertest(web)
+            .get(`${basePath}/contacts`)
+            .set('Authorization', `Bearer ${token}`);
+
+        logger.info(res.body);
+        expect(res.status).toBe(200);
+        expect(res.body.data).toBeInstanceOf(Array);
+        expect(res.body.data.length).toBe(1);
+        expect(res.body.paging.current_page).toBe(1);
+        expect(res.body.paging.total_page).toBe(1);
+        expect(res.body.paging.page_size).toBe(10);
+    });
+
+    it("should be able to search contacts by name - found", async () => {
+        const res = await supertest(web)
+            .get(`${basePath}/contacts`)
+            .query({
+                name: "ast"
+            })
+            .set('Authorization', `Bearer ${token}`);
+
+        logger.info(res.body);
+        expect(res.status).toBe(200);
+        expect(res.body.data).toBeInstanceOf(Array);
+        expect(res.body.data.length).toBe(1);
+        expect(res.body.paging.current_page).toBe(1);
+        expect(res.body.paging.total_page).toBe(1);
+        expect(res.body.paging.page_size).toBe(10);
+    });
+
+    it("should be able to search contacts by name - not found", async () => {
+        const res = await supertest(web)
+            .get(`${basePath}/contacts`)
+            .query({
+                name: "random"
+            })
+            .set('Authorization', `Bearer ${token}`);
+
+        logger.info(res.body);
+        expect(res.status).toBe(200);
+        expect(res.body.data).toBeInstanceOf(Array);
+        expect(res.body.data.length).toBe(0);
+        expect(res.body.paging.current_page).toBe(1);
+        expect(res.body.paging.total_page).toBe(0);
+        expect(res.body.paging.page_size).toBe(10);
+    });
+
+    it("should be able to search contacts by email - found", async () => {
+        const res = await supertest(web)
+            .get(`${basePath}/contacts`)
+            .query({
+                email: "t.co"
+            })
+            .set('Authorization', `Bearer ${token}`);
+
+        logger.info(res.body);
+        expect(res.status).toBe(200);
+        expect(res.body.data).toBeInstanceOf(Array);
+        expect(res.body.data.length).toBe(1);
+        expect(res.body.paging.current_page).toBe(1);
+        expect(res.body.paging.total_page).toBe(1);
+        expect(res.body.paging.page_size).toBe(10);
+    });
+
+    it("should be able to search contacts by phone - found", async () => {
+        const res = await supertest(web)
+            .get(`${basePath}/contacts`)
+            .query({
+                phone: "081"
+            })
+            .set('Authorization', `Bearer ${token}`);
+
+        logger.info(res.body);
+        expect(res.status).toBe(200);
+        expect(res.body.data).toBeInstanceOf(Array);
+        expect(res.body.data.length).toBe(1);
+        expect(res.body.paging.current_page).toBe(1);
+        expect(res.body.paging.total_page).toBe(1);
+        expect(res.body.paging.page_size).toBe(10);
+    });
+
+    it("should be able to search contacts by phone - not found", async () => {
+        const res = await supertest(web)
+            .get(`${basePath}/contacts`)
+            .query({
+                phone: "99"
+            })
+            .set('Authorization', `Bearer ${token}`);
+
+        logger.info(res.body);
+        expect(res.status).toBe(200);
+        expect(res.body.data).toBeInstanceOf(Array);
+        expect(res.body.data.length).toBe(0);
+        expect(res.body.paging.current_page).toBe(1);
+        expect(res.body.paging.total_page).toBe(0);
+        expect(res.body.paging.page_size).toBe(10);
+    });
+});
+
+describe("GET /contacts:id", () => { 
     let token: string = "";
     let createdContact: Contact = {} as Contact;
 
@@ -21,7 +135,7 @@ describe("GET /contact:id", () => {
 
     it ("should return 200 - success getting a contact", async () => {
         const res = await supertest(web)
-            .get(`${basePath}/contact/${createdContact.id}`)
+            .get(`${basePath}/contacts/${createdContact.id}`)
             .set('Authorization', `Bearer ${token}`);
 
         logger.info(res.body);
@@ -35,7 +149,7 @@ describe("GET /contact:id", () => {
 
     it("should return 404 - invalid contact id", async () => {
         const res = await supertest(web)
-            .get(`${basePath}/contact/test123`)
+            .get(`${basePath}/contacts/test123`)
             .set('Authorization', `Bearer ${token}`);
 
         logger.info(res.body);
@@ -45,7 +159,7 @@ describe("GET /contact:id", () => {
 
     it("should return 404 - contact id doesn't exists", async () => {
         const res = await supertest(web)
-            .get(`${basePath}/contact/10000`)
+            .get(`${basePath}/contacts/10000`)
             .set('Authorization', `Bearer ${token}`);
 
         logger.info(res.body);
@@ -55,7 +169,7 @@ describe("GET /contact:id", () => {
 
     it("should return 401 - empty authorization", async () => {
         const res = await supertest(web)
-            .get(`${basePath}/contact/${createdContact.id}`);
+            .get(`${basePath}/contacts/${createdContact.id}`);
 
         logger.info(res.body);
         expect(res.status).toBe(401);
@@ -63,7 +177,7 @@ describe("GET /contact:id", () => {
     });
 });
 
-describe("POST /contact", () => {
+describe("POST /contacts", () => {
     let token: string = "";
 
     beforeAll(async () => {
@@ -77,7 +191,7 @@ describe("POST /contact", () => {
 
     it("should return 200 - success creating contact", async () => {
         const res = await supertest(web)
-            .post(`${basePath}/contact`)
+            .post(`${basePath}/contacts`)
             .send(ContactTestUtil.contact)
             .set('Authorization', `Bearer ${token}`);
 
@@ -92,7 +206,7 @@ describe("POST /contact", () => {
 
     it("should return 200 - success creating contact with emty last_name, email, and phone", async () => {
         const res = await supertest(web)
-            .post(`${basePath}/contact`)
+            .post(`${basePath}/contacts`)
             .send({
                 first_name: ContactTestUtil.contact.first_name
             })
@@ -109,7 +223,7 @@ describe("POST /contact", () => {
 
     it("should return 400 - bad request invalid email", async () => {
         const res = await supertest(web)
-            .post(`${basePath}/contact`)
+            .post(`${basePath}/contacts`)
             .send({
                 first_name: ContactTestUtil.contact.first_name,
                 last_name: ContactTestUtil.contact.last_name,
@@ -124,7 +238,7 @@ describe("POST /contact", () => {
 
     it("should return 400 - bad request phone number more than 20 characters", async () => {
         const res = await supertest(web)
-            .post(`${basePath}/contact`)
+            .post(`${basePath}/contacts`)
             .send({
                 first_name: ContactTestUtil.contact.first_name,
                 last_name: ContactTestUtil.contact.last_name,
@@ -139,7 +253,7 @@ describe("POST /contact", () => {
 
     it("should return 401 - empty authorization", async () => {
         const res = await supertest(web)
-            .post(`${basePath}/contact`)
+            .post(`${basePath}/contacts`)
             .send({
                 first_name: ContactTestUtil.contact.first_name
             });
