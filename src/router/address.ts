@@ -8,6 +8,7 @@ export const getAddressRouter = (basePath: string) => {
     addressRouter.get(`${basePath}/contacts/:contactId/addresses`, AddressController.getAll);
     addressRouter.post(`${basePath}/contacts/:contactId/addresses`, AddressController.create);
     addressRouter.put(`${basePath}/contacts/:contactId/addresses/:addressId`, AddressController.update);
+    addressRouter.delete(`${basePath}/contacts/:contactId/addresses/:addressId`, AddressController.delete);
 
     return addressRouter;
 }

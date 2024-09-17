@@ -35,7 +35,7 @@ export class AddressController {
 
             const createRes = await AddressService.create(res.locals.user.usename, contactId, createReq);
 
-            return res.status(200)
+            res.status(200)
                 .json({
                     data: createRes
                 });
@@ -50,7 +50,7 @@ export class AddressController {
                 throw new ResponseError(404, "contact doesn't exists");
             }
             if (isNaN(Number(req.params.addressId)) || Number(req.params.addressId) < 1) {
-                throw new ResponseError(404, "contact doesn't exists");
+                throw new ResponseError(404, "address doesn't exists");
             }
 
             const updateReq = req.body as AddressRequest;
@@ -59,9 +59,31 @@ export class AddressController {
 
             const updateRes = await AddressService.update(res.locals.user.usename, contactId, addressId, updateReq);
 
-            return res.status(200)
+            res.status(200)
                 .json({
                     data: updateRes
+                });
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    static async delete(req: Request, res: Response, next: NextFunction) {
+        try {
+            if (isNaN(Number(req.params.contactId)) || Number(req.params.contactId) < 1) {
+                throw new ResponseError(404, "contact doesn't exists");
+            }
+            if (isNaN(Number(req.params.addressId)) || Number(req.params.addressId) < 1) {
+                throw new ResponseError(404, "address doesn't exists");
+            }
+            const contactId = Number(req.params.contactId);
+            const addressId = Number(req.params.addressId);
+
+            const deleteRes = await AddressService.delete(res.locals.user.username, contactId, addressId);
+
+            res.status(200)
+                .json({
+                    status: deleteRes
                 });
         } catch (e) {
             next(e);

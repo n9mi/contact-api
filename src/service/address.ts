@@ -100,4 +100,35 @@ export default class AddressService {
 
         return toAddressResponse(address);
     }
+
+    static async delete(username: string, contactId: number, addressId: number): Promise<boolean> {
+        const isContactExists = await prisma.contact.count({
+            where: {
+                id: contactId,
+                username: username
+            }
+        }) === 1;
+        if (!isContactExists) {
+            throw new ResponseError(404, "contact doesn't exists");
+        }
+
+        const isAddressExists = await prisma.address.count({
+            where: {
+                id: addressId,
+                contact_id: contactId,
+            }
+        }) === 1;
+        if (!isAddressExists) {
+            throw new ResponseError(404, "address doesn't exists");
+        }
+
+        await prisma.address.delete({
+            where: {
+                id: addressId,
+                contact_id: contactId,
+            }
+        });
+
+        return true;
+    }
 }

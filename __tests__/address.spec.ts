@@ -149,7 +149,7 @@ describe("POST /contacts/:contactId/addresses", () => {
     });
 });
 
-describe("POST /contacts/:contactId/addresses", () => {
+describe("PUT /contacts/:contactId/addresses/:addressId", () => {
     let token: string = "";
     let contact: Contact = {} as Contact;
     let address: Address = {} as Address;
@@ -262,6 +262,54 @@ describe("POST /contacts/:contactId/addresses", () => {
         expect(res.body.errors).toBeDefined();
     });
 });
+
+describe("DELETE /contacts/:contactId/addresses/:addressId", () => {
+    let token: string = "";
+    let contact: Contact = {} as Contact;
+    let address: Address = {} as Address;
+
+    beforeAll(async () => {
+        token = await AddressTestUtil.getToken();
+        contact = await AddressTestUtil.createContact();
+        address = await AddressTestUtil.createAddress(contact.id);
+    });
+
+    afterAll(async () => {
+        await AddressTestUtil.deleteAddress();
+        await AddressTestUtil.deleteContact();
+        await AddressTestUtil.deleteUser();
+    });
+
+    it("should return 200 - success deleting an address", async () => {
+        const res = await supertest(web)
+            .delete(`${basePath}/contacts/${contact.id}/addresses/${address.id}`)
+            .set('Authorization', `Bearer ${token}`);
+
+        logger.info(res.body);
+        expect(res.status).toBe(200);
+        expect(res.body.status).toBe(true);
+    });
+
+    it("should return 404 - contact doesn't exists", async () => {
+        const res = await supertest(web)
+            .delete(`${basePath}/contacts/${1000}/addresses/${address.id}`)
+            .set('Authorization', `Bearer ${token}`);
+
+        logger.info(res.body);
+        expect(res.status).toBe(404);
+        expect(res.body.errors).toBeDefined();
+    });
+
+    it("should return 404 - address doesn't exists", async () => {
+        const res = await supertest(web)
+            .delete(`${basePath}/contacts/${contact.id}/addresses/${1000}`)
+            .set('Authorization', `Bearer ${token}`);
+
+        logger.info(res.body);
+        expect(res.status).toBe(404);
+        expect(res.body.errors).toBeDefined();
+    });
+})
 
 class AddressTestUtil {
     static user = {
