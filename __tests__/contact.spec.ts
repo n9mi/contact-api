@@ -426,7 +426,7 @@ class ContactTestUtil {
         phone: "08123456789"
     }
 
-    static async create() {
+    static async createUser() {
         await prisma.user.create({
             data: {
                 name: ContactTestUtil.user.name, 
@@ -437,7 +437,7 @@ class ContactTestUtil {
     }
 
     static async getToken() {
-        await ContactTestUtil.create();
+        await ContactTestUtil.createUser();
 
         const loginRes = await supertest(web)
             .post(`${basePath}/auth/login`)

@@ -25,7 +25,7 @@ export class ContactController {
 
     static async getById(req: Request, res: Response, next: NextFunction) {
         try {
-            if (isNaN(Number(req.params.id))) {
+            if (isNaN(Number(req.params.id)) || Number(req.params.id) < 1) {
                 throw new ResponseError(404, "contact doesn't exists")
             }
             const getRes = await ContactService.findById(res.locals.user.username, Number(req.params.id));
@@ -54,7 +54,7 @@ export class ContactController {
 
     static async update(req: Request, res: Response, next: NextFunction) {
         try {
-            if (isNaN(Number(req.params.id))) {
+            if (isNaN(Number(req.params.id)) || Number(req.params.id) < 1) {
                 throw new ResponseError(404, "contact doesn't exists");
             }
             const updateRes = await ContactService.update(res.locals.user.username, 
@@ -72,7 +72,7 @@ export class ContactController {
 
     static async delete(req: Request, res: Response, next: NextFunction) {
         try {
-            if (isNaN(Number(req.params.id))) {
+            if (isNaN(Number(req.params.id)) || Number(req.params.id) < 1) {
                 throw new ResponseError(404, "contact doesn't exists");
             }
             const deleteRes = await ContactService.delete(res.locals.username, Number(req.params.id));
