@@ -1,19 +1,55 @@
 import prisma from "../application/database";
 import { ResponseError } from "../error/response";
-import { AddressRequest, toAddressResponse } from "../model/address";
+import { AddressListRequest, AddressRequest, AddressResponse, toAddressResponse } from "../model/address";
+import { Pageable } from "../model/page";
 import { AddressValidation } from "../validation/address";
 import { Validation } from "../validation/validation";
 
 export default class AddressService {
 
-    // static async 
+    static async findAll(username: string, contactId: number, req: AddressListRequest): Promise<Pageable<AddressResponse>> {
+        const validatedReq = Validation.validate(AddressValidation.LIST, req);
 
-    static async create(username: string, req: AddressRequest) {
+        const isContactExists = await prisma.contact.count({
+            where: {
+                id: contactId,
+                username: username
+            }
+        }) === 1;
+        if (!isContactExists) {
+            throw new ResponseError(404, "contact doesn't exists");
+        }
+
+        const skip = (validatedReq.page - 1) * validatedReq.page_size;
+        const addresses = await prisma.address.findMany({
+            where: {
+                contact_id: contactId,
+            },
+            take: validatedReq.page_size,
+            skip: skip
+        });
+        const total = await prisma.address.count({
+            where: {
+                contact_id: contactId
+            }
+        });
+
+        return {
+            data: addresses.map(a => toAddressResponse(a)),
+            paging: {
+                current_page: validatedReq.page,
+                total_page: Math.ceil(total / validatedReq.page_size),
+                page_size: validatedReq.page_size    
+            }
+        }
+    }
+
+    static async create(username: string, contactId: number, req: AddressRequest) {
         const validateReq = Validation.validate(AddressValidation.SAVE, req);
 
         const isContactExists = await prisma.contact.count({
             where: {
-                id: validateReq.contact_id,
+                id: contactId,
                 username: username
             }
         }) === 1;
@@ -22,7 +58,10 @@ export default class AddressService {
         }
 
         const address = await prisma.address.create({
-            data: validateReq
+            data: {
+                ...validateReq,
+                contact_id: contactId
+            }
         });
 
         return toAddressResponse(address);

@@ -1,12 +1,16 @@
 import { Address } from "@prisma/client";
 
+export interface AddressListRequest {
+    page: number,
+    page_size: number
+}
+
 export interface AddressRequest {
     street?: string,
     city?: string,
     province?: string,
     country: string,
-    postal_code: string,
-    contact_id: number
+    postal_code: string
 }
 
 export interface AddressResponse {

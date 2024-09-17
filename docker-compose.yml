@@ -13,23 +13,23 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     networks:
       - contact_api_network
-  # contact-api:
-  #   environment:
-  #     - DATABASE_URL=${DATABASE_URL}
-  #     - PORT=${PORT}
-  #     - BASE_URL_PATH=${BASE_URL_PATH}
-  #     - JWT_SECRET=${JWT_SECRET}
-  #     - JWT_EXPIRED_IN_MINUTES=${JWT_EXPIRED_IN_MINUTES}
-  #   build: .
-  #   image: contact-api
-  #   ports:
-  #     - '3000:3000'
-  #   depends_on:
-  #     - db
-  #   volumes:
-  #     - .:/usr/src/node-app
-  #   networks:
-  #     - contact_api_network
+  contact-api:
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - PORT=${PORT}
+      - BASE_URL_PATH=${BASE_URL_PATH}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRED_IN_MINUTES=${JWT_EXPIRED_IN_MINUTES}
+    build: .
+    image: contact-api
+    ports:
+      - '3000:3000'
+    depends_on:
+      - db
+    volumes:
+      - .:/usr/src/node-app
+    networks:
+      - contact_api_network
 
 volumes:
   postgres-db:

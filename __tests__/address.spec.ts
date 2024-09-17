@@ -5,6 +5,75 @@ import { basePath, web } from "../src/application/web";
 import { Address, Contact } from "@prisma/client";
 import logger from "../src/application/logger";
 
+describe("GET /contacts/:contactId/addresses", () => {
+    let token: string = "";
+    let contact: Contact = {} as Contact;
+    let address: Address = {} as Address;
+
+    beforeAll(async () => {
+        token = await AddressTestUtil.getToken();
+        contact = await AddressTestUtil.createContact();
+        address = await AddressTestUtil.createAddress(contact.id);
+    });
+
+    afterAll(async () => {
+        await AddressTestUtil.deleteAddress();
+        await AddressTestUtil.deleteContact();
+        await AddressTestUtil.deleteUser();
+    })
+
+    it("should be able to get all address", async () => {
+        const res = await supertest(web)
+            .get(`${basePath}/contacts/${contact.id}/addresses`)
+            .set('Authorization', `Bearer ${token}`);
+
+        logger.info(res.body);
+        expect(res.status).toBe(200);
+        expect(res.body.data).toBeInstanceOf(Array);
+        expect(res.body.data.length).toBe(1);
+        expect(res.body.paging.page_size).toBe(10);
+        expect(res.body.paging.total_page).toBe(1);
+        expect(res.body.paging.current_page).toBe(1);
+    });
+
+    it("should be able to get all address - pagination", async () => {
+        const res = await supertest(web)
+            .get(`${basePath}/contacts/${contact.id}/addresses`)
+            .query({
+                page: 2,
+                page_size: 5
+            })
+            .set('Authorization', `Bearer ${token}`);
+
+        logger.info(res.body);
+        expect(res.status).toBe(200);
+        expect(res.body.data).toBeInstanceOf(Array);
+        expect(res.body.data.length).toBe(0);
+        expect(res.body.paging.page_size).toBe(5);
+        expect(res.body.paging.total_page).toBe(1);
+        expect(res.body.paging.current_page).toBe(2);
+    });
+
+    it("should return 404 - not found contact", async () => {
+        const res = await supertest(web)
+            .get(`${basePath}/contacts/${1000}/addresses`)
+            .set('Authorization', `Bearer ${token}`);
+
+        logger.info(res.body);
+        expect(res.status).toBe(404);
+        expect(res.body.errors).toBeDefined();
+    });
+
+    it("should return 401 - empty authorization", async () => {
+        const res = await supertest(web)
+            .get(`${basePath}/contacts/${contact.id}/addresses`)
+
+        logger.info(res.body);
+        expect(res.status).toBe(401);
+        expect(res.body.errors).toBeDefined();
+    });
+});
+
 describe("POST /contacts/:contactId/addresses", () => {
     let token: string = "";
     let contact: Contact = {} as Contact;

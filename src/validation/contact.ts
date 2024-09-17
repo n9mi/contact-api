@@ -19,7 +19,7 @@ export class ContactValidation {
                 message: "email length should more than 1 character"
             }).optional(),
         page: z.number({
-            invalid_type_error: "page should be a number"
+                invalid_type_error: "page should be a number"
             }).min(1, {
                 message: "page should be at least equal to 1"
             }).positive(),

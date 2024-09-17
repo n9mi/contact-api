@@ -2,6 +2,21 @@ import { z, ZodType } from "zod";
 
 export class AddressValidation {
 
+    static readonly LIST: ZodType = z.object({
+        page: z.number({
+                invalid_type_error: "page should be a number"
+            }).min(1, {
+                message: "page should be at least equal to 1"
+            }).positive(),
+        page_size: z.number({
+                invalid_type_error: "page_size should be a number"
+            }).min(1, {
+                message: "page should be at least equal to 1"
+            }).max(100, {
+                message: "page_size can't be more than 100"
+            }).positive(),
+    });
+
     static readonly SAVE: ZodType = z.object({
         street: z.string({
                 invalid_type_error: "street should be string"
@@ -39,13 +54,6 @@ export class AddressValidation {
                 message: "postal code length should more than or equal 5 characters"
             }).max(20, {
                 message: "postal code length should less than 20 characters"
-            }),
-        contact_id: z.number({
-                invalid_type_error: "contact id should be a number"
-            }).min(1, {
-                message: "contact should more than 1"
-            }).positive({
-                message: "contact should be a positive number"
-            }),
+            })
     });
 }
