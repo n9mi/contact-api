@@ -149,6 +149,120 @@ describe("POST /contacts/:contactId/addresses", () => {
     });
 });
 
+describe("POST /contacts/:contactId/addresses", () => {
+    let token: string = "";
+    let contact: Contact = {} as Contact;
+    let address: Address = {} as Address;
+
+    beforeAll(async () => {
+        token = await AddressTestUtil.getToken();
+        contact = await AddressTestUtil.createContact();
+        address = await AddressTestUtil.createAddress(contact.id);
+    });
+
+    afterAll(async () => {
+        await AddressTestUtil.deleteAddress();
+        await AddressTestUtil.deleteContact();
+        await AddressTestUtil.deleteUser();
+    });
+
+    const addressUpdated = {
+        street: "Test Street Updated",
+        city: "Test City Updated",
+        province: "Test Province Updated",
+        country: "Test Country Updated",
+        postal_code: "123450"
+    };
+
+    it("should return 200 - success updating address with empty street, city, and province", async () => {
+        const res = await supertest(web)
+            .put(`${basePath}/contacts/${contact.id}/addresses/${address.id}`)
+            .send({
+                country: AddressTestUtil.address.country + " recently updated",
+                postal_code: AddressTestUtil.address.postal_code + "9",
+            })
+            .set('Authorization', `Bearer ${token}`);
+
+        logger.info(res.body);
+        expect(res.status).toBe(200);
+        expect(res.body.data.street).toBe(AddressTestUtil.address.street);
+        expect(res.body.data.city).toBe(AddressTestUtil.address.city);
+        expect(res.body.data.province).toBe(AddressTestUtil.address.province);
+        expect(res.body.data.country).toBe(AddressTestUtil.address.country + " recently updated");
+        expect(res.body.data.postal_code).toBe(AddressTestUtil.address.postal_code + "9");
+    });
+
+    it("should return 200 - success updating address", async () => {
+        const res = await supertest(web)
+            .put(`${basePath}/contacts/${contact.id}/addresses/${address.id}`)
+            .send(addressUpdated)
+            .set('Authorization', `Bearer ${token}`);
+
+        logger.info(res.body);
+        expect(res.status).toBe(200);
+        expect(res.body.data.street).toBe(addressUpdated.street);
+        expect(res.body.data.city).toBe(addressUpdated.city);
+        expect(res.body.data.province).toBe(addressUpdated.province);
+        expect(res.body.data.country).toBe(addressUpdated.country);
+        expect(res.body.data.postal_code).toBe(addressUpdated.postal_code);
+    });
+
+    it("should return 400 - invalid postal code", async () => {
+        const res = await supertest(web)
+            .put(`${basePath}/contacts/${contact.id}/addresses/${address.id}`)
+            .send({
+                country: addressUpdated.country,
+                postal_code: "123"
+            })
+            .set('Authorization', `Bearer ${token}`);
+
+        logger.info(res.body);
+        expect(res.status).toBe(400);
+        expect(res.body.errors.postal_code).toBeDefined();
+    });
+
+    it("should return 404 - contact doesn't exists", async () => {
+        const res = await supertest(web)
+            .put(`${basePath}/contacts/${1000}/addresses/${address.id}`)
+            .send({
+                country: addressUpdated.country,
+                postal_code: addressUpdated.postal_code,
+            })
+            .set('Authorization', `Bearer ${token}`);
+
+        logger.info(res.body);
+        expect(res.status).toBe(404);
+        expect(res.body.errors).toBeDefined();
+    });
+
+    it("should return 404 - address doesn't exists", async () => {
+        const res = await supertest(web)
+            .put(`${basePath}/contacts/${contact.id}/addresses/${1000}`)
+            .send({
+                country: addressUpdated.country,
+                postal_code: addressUpdated.postal_code,
+            })
+            .set('Authorization', `Bearer ${token}`);
+
+        logger.info(res.body);
+        expect(res.status).toBe(404);
+        expect(res.body.errors).toBeDefined();
+    });
+
+    it("should return 401 - empty authorization", async () => {
+        const res = await supertest(web)
+            .put(`${basePath}/contacts/${contact.id}/addresses/${address.id}`)
+            .send({
+                country: addressUpdated.country,
+                postal_code: addressUpdated.postal_code,
+            });
+
+        logger.info(res.body);
+        expect(res.status).toBe(401);
+        expect(res.body.errors).toBeDefined();
+    });
+});
+
 class AddressTestUtil {
     static user = {
         name: "user_test_address",
@@ -169,7 +283,7 @@ class AddressTestUtil {
         province: "Test Province",
         country: "Test Country",
         postal_code: "123456",
-    }
+    };
 
     static async createUser() {
         await prisma.user.create({

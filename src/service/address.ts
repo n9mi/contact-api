@@ -66,4 +66,38 @@ export default class AddressService {
 
         return toAddressResponse(address);
     }
+
+    static async update(username: string, contactId: number, addressId: number, req: AddressRequest) {
+        const validatedReq = Validation.validate(AddressValidation.SAVE, req);
+
+        const isContactExists = await prisma.contact.count({
+            where: {
+                id: contactId,
+                username: username
+            }
+        }) === 1;
+        if (!isContactExists) {
+            throw new ResponseError(404, "contact doesn't exists");
+        }
+
+        const isAddressExists = await prisma.address.count({
+            where: {
+                id: addressId,
+                contact_id: contactId,
+            }
+        }) === 1;
+        if (!isAddressExists) {
+            throw new ResponseError(404, "address doesn't exists");
+        }
+
+        const address = await prisma.address.update({
+            where: {
+                id: addressId,
+                contact_id: contactId,
+            },
+            data: validatedReq
+        });
+
+        return toAddressResponse(address);
+    }
 }
